@@ -13,26 +13,39 @@ export default async function handler(req, res) {
   try {
     var data = req.body || {};
 
+    // Limpia caracteres Unicode problematicos (separadores de linea, etc.)
+    // que rompen el envio. Reemplaza por espacio normal.
+    function limpiar(s){
+      return String(s || "").replace(/[\u2028\u2029]/g, " ").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+    }
+    data.nombre = limpiar(data.nombre);
+    data.whatsapp = limpiar(data.whatsapp);
+    data.ciudad = limpiar(data.ciudad);
+    data.resumen = limpiar(data.resumen);
+    data.fecha = limpiar(data.fecha);
+    data.score = limpiar(data.score);
+
     // ── A quién llega el correo ──
     var EMAIL_FERNANDO = "camilo.rodriguez.ara@gmail.com"; // <<< CAMBIAR por el correo real
 
-    // Temperatura del lead según el score
+    // Temperatura del lead segun el score
     var score = parseFloat(data.score || "5");
     var caliente = score >= 7;
-    var emoji = caliente ? "🔥" : "🌲";
     var etiqueta = caliente ? "LEAD CALIENTE" : "Nuevo lead";
 
     // Link de WhatsApp para que Fernando contacte al lead
     var waNumero = String(data.whatsapp || "").replace(/[^0-9]/g, "");
     if (waNumero.indexOf("56") !== 0 && waNumero.length === 9) waNumero = "56" + waNumero;
-    var saludo = "Hola " + (data.nombre || "") + "! Soy Fernando de Raíces de Paillaco. " +
-                 "Vi que cotizaste por la web, te cuento de las parcelas que quedan disponibles 🌲";
+    var saludo = "Hola " + (data.nombre || "") + "! Soy Fernando de Raices de Paillaco. " +
+                 "Vi que cotizaste por la web, te cuento de las parcelas que quedan disponibles.";
     var waLink = "https://wa.me/" + waNumero + "?text=" + encodeURIComponent(saludo);
 
     var primerNombre = (data.nombre || "el lead").split(" ")[0];
 
-    var asunto = emoji + " " + etiqueta + " — " + (data.nombre || "Sin nombre") +
-                 " (calificación " + (data.score || "s/i") + "/10)";
+    // El asunto NO puede tener emojis ni caracteres especiales (rompen el header del correo).
+    // Solo texto simple. Los emojis van en el cuerpo HTML, ahi si funcionan.
+    var asunto = (caliente ? "[CALIENTE] " : "[Nuevo lead] ") + (data.nombre || "Sin nombre") +
+                 " - calificacion " + (data.score || "s/i") + "/10";
 
     var html =
       '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;border:1px solid #e0ddd4;border-radius:12px;overflow:hidden">' +
