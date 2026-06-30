@@ -74,11 +74,15 @@ export default async function handler(req, res) {
         '</div>' +
       '</div>';
 
+    // Limpia la API key de cualquier caracter invisible/raro que se haya
+    // colado al copiar-pegar (espacios, saltos de linea, separadores Unicode).
+    var resendKey = String(process.env.RESEND_API_KEY || "").replace(/[^\x20-\x7E]/g, "").trim();
+
     // Enviar con Resend
     var r = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer " + process.env.RESEND_API_KEY,
+        "Authorization": "Bearer " + resendKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
