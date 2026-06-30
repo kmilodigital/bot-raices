@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     data.score = limpiar(data.score);
 
     // ── A quién llega el correo ──
-    var EMAIL_FERNANDO = "camilo.rodriguez.ara@gmail.com"; // <<< CAMBIAR por el correo real
+    var EMAIL_FERNANDO = "correo-de-fernando@gmail.com"; // <<< CAMBIAR por el correo real
 
     // Temperatura del lead segun el score
     var score = parseFloat(data.score || "5");
